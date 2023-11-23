@@ -1,7 +1,8 @@
-import json
 from django.http import JsonResponse
 from django.templatetags.static import static
 from .models import Order, OrderItem
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 
 from .models import Product
@@ -59,20 +60,28 @@ def product_list_api(request):
     })
 
 
+@api_view(['POST'])
 def register_order(request):
-    response = json.loads(request.body.decode())
-    new_order = Order.objects.create(
-        first_name=response.get('firstname'),
-        last_name=response.get('lastname'),
-        address=response.get('address'),
-        phone_number=response.get('phonenumber'),
+    order_details = request.data
+    order = Order.objects.create(
+        first_name=order_details.get('firstname'),
+        last_name=order_details.get('lastname'),
+        address=order_details.get('address'),
+        phone_number=order_details.get('phonenumber'),
     )
 
-    for product in response.get('products'):
-        OrderItem.objects.create(
-            product=Product.objects.get(pk=product.get('product')),
-            order=new_order,
-            quantity=product.get('quantity')
-        )
-    return JsonResponse(json.loads(request.body.decode()))
+    return Response(
+        {
+            'products': [{"product": item.product.pk, "quantity": item.quantity} for item
+                         in [OrderItem.objects.create(
+                            product=Product.objects.get(pk=product.get('product')),
+                            order=order,
+                            quantity=product.get('quantity')
+                            ) for product in order_details.get('products')]],
+            "firstname": order.first_name,
+            "lastname": order.last_name,
+            "phonenumber": f'+{order.phone_number.country_code}{order.phone_number.national_number}',
+            "address": order.address
+        }
+    )
 
