@@ -1,11 +1,11 @@
+from django.db import IntegrityError
 from django.http import JsonResponse
 from django.templatetags.static import static
-from .models import Order, OrderItem
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import Product
+from .models import Order, OrderItem, Product
 
 
 def banners_list_api(request):
@@ -63,12 +63,25 @@ def product_list_api(request):
 @api_view(['POST'])
 def register_order(request):
     order_details = request.data
-    order = Order.objects.create(
-        first_name=order_details.get('firstname'),
-        last_name=order_details.get('lastname'),
-        address=order_details.get('address'),
-        phone_number=order_details.get('phonenumber'),
-    )
+    for key, value in order_details.items():
+        if not value:
+            return Response({'error': f'{key}:{value} must be not null and not none'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        order = Order.objects.create(
+            first_name=order_details.get('firstname'),
+            last_name=order_details.get('lastname'),
+            address=order_details.get('address'),
+            phone_number=order_details.get('phonenumber'),
+        )
+        if not order.phone_number.is_valid():
+            return Response({'error': 'phone number is not valid'}, status=status.HTTP_400_BAD_REQUEST)
+    except IntegrityError as ex:
+        return Response({'error': f'key required {str(ex)}'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as ex:
+        print(ex)
+        return Response({'error': f'key required {str(ex)}'}, status=status.HTTP_400_BAD_REQUEST)
     try:
         order_items = [{"product": item.product.pk, "quantity": item.quantity} for item
                        in [OrderItem.objects.create(
@@ -89,7 +102,10 @@ def register_order(request):
         else:
             return Response({'error': 'List of items is empty'}, status=status.HTTP_400_BAD_REQUEST)
     except AttributeError as ex:
-        return Response({'error': f'product key is {str(ex)}'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response({'error': f'Key is {str(ex)}'}, status=status.HTTP_406_NOT_ACCEPTABLE)
     except TypeError as ex:
-        return Response({'error': f'product key is {str(ex)}'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response({'error': f'Key is {str(ex)}'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    except Product.DoesNotExist as ex:
+        return Response({'error': f'{str(ex)}'}, status=status.HTTP_400_BAD_REQUEST)
+
 
