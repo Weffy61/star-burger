@@ -3,7 +3,7 @@ from django.templatetags.static import static
 from .models import Order, OrderItem
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from rest_framework import status
 
 from .models import Product
 
@@ -69,19 +69,27 @@ def register_order(request):
         address=order_details.get('address'),
         phone_number=order_details.get('phonenumber'),
     )
-
-    return Response(
-        {
-            'products': [{"product": item.product.pk, "quantity": item.quantity} for item
-                         in [OrderItem.objects.create(
-                            product=Product.objects.get(pk=product.get('product')),
-                            order=order,
-                            quantity=product.get('quantity')
-                            ) for product in order_details.get('products')]],
-            "firstname": order.first_name,
-            "lastname": order.last_name,
-            "phonenumber": f'+{order.phone_number.country_code}{order.phone_number.national_number}',
-            "address": order.address
-        }
-    )
+    try:
+        order_items = [{"product": item.product.pk, "quantity": item.quantity} for item
+                       in [OrderItem.objects.create(
+                        product=Product.objects.get(pk=product.get('product')),
+                        order=order,
+                        quantity=product.get('quantity'))
+                        for product in order_details.get('products')]]
+        if isinstance(order_items, list) and len(order_items) > 0:
+            return Response(
+                {
+                    'products': order_items,
+                    "firstname": order.first_name,
+                    "lastname": order.last_name,
+                    "phonenumber": f'+{order.phone_number.country_code}{order.phone_number.national_number}',
+                    "address": order.address
+                }
+            )
+        else:
+            return Response({'error': 'List of items is empty'}, status=status.HTTP_400_BAD_REQUEST)
+    except AttributeError as ex:
+        return Response({'error': f'product key is {str(ex)}'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    except TypeError as ex:
+        return Response({'error': f'product key is {str(ex)}'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
