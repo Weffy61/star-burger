@@ -1,9 +1,8 @@
-from django.db import IntegrityError
 from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.serializers import ModelSerializer, ListField
 
 from .models import Order, OrderItem, Product
 
@@ -60,52 +59,44 @@ def product_list_api(request):
     })
 
 
+class OrderItemSerializer(ModelSerializer):
+
+    class Meta:
+        model = OrderItem
+        fields = ['product', 'quantity']
+
+
+class OrderSerializer(ModelSerializer):
+    products = ListField(
+        child=OrderItemSerializer(),
+        allow_empty=False
+    )
+
+    class Meta:
+        model = Order
+        fields = ['products', 'firstname', 'lastname', 'phonenumber', 'address']
+
+
 @api_view(['POST'])
 def register_order(request):
-    order_details = request.data
-    for key, value in order_details.items():
-        if not value:
-            return Response({'error': f'{key}:{value} must be not null and not none'},
-                            status=status.HTTP_400_BAD_REQUEST)
+    serializer = OrderSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
 
-    try:
-        order = Order.objects.create(
-            first_name=order_details.get('firstname'),
-            last_name=order_details.get('lastname'),
-            address=order_details.get('address'),
-            phone_number=order_details.get('phonenumber'),
+    order = Order.objects.create(
+            firstname=serializer.validated_data['firstname'],
+            lastname=serializer.validated_data['lastname'],
+            address=serializer.validated_data['address'],
+            phonenumber=serializer.validated_data['phonenumber'],
         )
-        if not order.phone_number.is_valid():
-            return Response({'error': 'phone number is not valid'}, status=status.HTTP_400_BAD_REQUEST)
-    except IntegrityError as ex:
-        return Response({'error': f'key required {str(ex)}'}, status=status.HTTP_400_BAD_REQUEST)
-    except Exception as ex:
-        print(ex)
-        return Response({'error': f'key required {str(ex)}'}, status=status.HTTP_400_BAD_REQUEST)
-    try:
-        order_items = [{"product": item.product.pk, "quantity": item.quantity} for item
-                       in [OrderItem.objects.create(
-                        product=Product.objects.get(pk=product.get('product')),
-                        order=order,
-                        quantity=product.get('quantity'))
-                        for product in order_details.get('products')]]
-        if isinstance(order_items, list) and len(order_items) > 0:
-            return Response(
-                {
-                    'products': order_items,
-                    "firstname": order.first_name,
-                    "lastname": order.last_name,
-                    "phonenumber": f'+{order.phone_number.country_code}{order.phone_number.national_number}',
-                    "address": order.address
-                }
-            )
-        else:
-            return Response({'error': 'List of items is empty'}, status=status.HTTP_400_BAD_REQUEST)
-    except AttributeError as ex:
-        return Response({'error': f'Key is {str(ex)}'}, status=status.HTTP_406_NOT_ACCEPTABLE)
-    except TypeError as ex:
-        return Response({'error': f'Key is {str(ex)}'}, status=status.HTTP_406_NOT_ACCEPTABLE)
-    except Product.DoesNotExist as ex:
-        return Response({'error': f'{str(ex)}'}, status=status.HTTP_400_BAD_REQUEST)
+    order_items_fields = serializer.validated_data['products']
+
+    order_items = [OrderItem(order=order, **fields) for fields in order_items_fields]
+    OrderItem.objects.bulk_create(order_items)
+
+    return Response(
+        {
+            'order_id': order.id
+        }
+    )
 
 
