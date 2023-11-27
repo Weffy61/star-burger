@@ -4,7 +4,6 @@ from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer, ListField
-from rest_framework.renderers import JSONRenderer
 
 from .models import Order, OrderItem, Product
 
