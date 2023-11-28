@@ -129,7 +129,7 @@ class OrderQuerySet(models.QuerySet):
 
     def get_order_price(self):
         amount = self.prefetch_related('items').prefetch_related('items__product').annotate(
-            order_price=Sum(F('items__quantity') * F('items__product__price'))
+            order_price=Sum(F('items__quantity') * F('items__price'))
         )
         return amount
 
@@ -153,6 +153,7 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE,  verbose_name='Товар', related_name='items')
     order = models.ForeignKey(Order, on_delete=models.CASCADE,  verbose_name='Заказ', related_name='items')
     quantity = models.IntegerField(verbose_name='Количество', validators=[MinValueValidator(1)])
+    price = models.DecimalField('цена', max_digits=8, decimal_places=2, validators=[MinValueValidator(0)])
 
     class Meta:
         verbose_name = 'Элемент заказа'

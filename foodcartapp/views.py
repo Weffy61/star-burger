@@ -1,11 +1,10 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
-from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.serializers import ModelSerializer, ListField
 
 from .models import Order, OrderItem, Product
+from .serializers import OrderSerializer
 
 
 def banners_list_api(request):
@@ -60,26 +59,6 @@ def product_list_api(request):
     })
 
 
-class OrderItemSerializer(ModelSerializer):
-
-    class Meta:
-        model = OrderItem
-        fields = ['product', 'quantity']
-
-
-class OrderSerializer(ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    products = ListField(
-        child=OrderItemSerializer(),
-        allow_empty=False,
-        write_only=True
-    )
-
-    class Meta:
-        model = Order
-        fields = ['id', 'products', 'firstname', 'lastname', 'phonenumber', 'address']
-
-
 @api_view(['POST'])
 def register_order(request):
     serializer = OrderSerializer(data=request.data)
@@ -92,8 +71,7 @@ def register_order(request):
         )
     order.save()
     order_items_fields = serializer.validated_data['products']
-
-    order_items = [OrderItem(order=order, **fields) for fields in order_items_fields]
+    order_items = [OrderItem(order=order, price=fields['product'].price, **fields) for fields in order_items_fields]
     OrderItem.objects.bulk_create(order_items)
     order_serializer = OrderSerializer(order)
     return Response(order_serializer.data)

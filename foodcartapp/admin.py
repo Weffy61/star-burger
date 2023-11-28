@@ -115,12 +115,14 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
+    fields = ['firstname', 'lastname', 'phonenumber', 'address']
 
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ['product', 'quantity', 'order', ]
+    list_display = ['product', 'price', 'quantity', 'order', ]
     raw_id_fields = ['product', 'order']
+
 
 
 
