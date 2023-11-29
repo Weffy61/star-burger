@@ -145,7 +145,7 @@ class Order(models.Model):
     lastname = models.CharField(verbose_name='Фамилия клиента', max_length=50)
     phonenumber = PhoneNumberField(verbose_name='Номер телефона')
     address = models.CharField(verbose_name='Адрес', max_length=200)
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='unprocessed')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='unprocessed', db_index=True)
     objects = OrderQuerySet.as_manager()
 
     class Meta:
