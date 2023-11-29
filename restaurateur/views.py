@@ -94,12 +94,12 @@ def view_restaurants(request):
 def view_orders(request):
     orders = [{
         'id': order.pk,
+        'status': order.get_status_display(),
         'client': f'{order.firstname} {order.lastname}',
         'phone': order.phonenumber,
         'address': order.address,
         'order_price': f'{round(order.order_price)} руб.',
     } for order in Order.objects.all().get_order_price()]
-
     return render(request, template_name='order_items.html', context={
         'orders': orders,
         'current_url': request.path

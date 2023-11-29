@@ -135,10 +135,17 @@ class OrderQuerySet(models.QuerySet):
 
 
 class Order(models.Model):
+    STATUS_CHOICES = [
+        ('unprocessed', 'Необработанный'),
+        ('prepair to ship', 'Сборка заказа'),
+        ('delivery', 'Доставка заказа'),
+        ('delivered', 'Товар доставлен'),
+    ]
     firstname = models.CharField(verbose_name='Имя клиента', max_length=50)
     lastname = models.CharField(verbose_name='Фамилия клиента', max_length=50)
     phonenumber = PhoneNumberField(verbose_name='Номер телефона')
     address = models.CharField(verbose_name='Адрес', max_length=200)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='unprocessed')
     objects = OrderQuerySet.as_manager()
 
     class Meta:

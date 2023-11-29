@@ -118,7 +118,7 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
-    fields = ['firstname', 'lastname', 'phonenumber', 'address']
+    fields = ['firstname', 'lastname', 'phonenumber', 'address', 'status']
 
     def response_post_save_change(self, request, obj):
         response = super().response_post_save_change(request, obj)
