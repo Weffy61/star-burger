@@ -100,6 +100,7 @@ def view_orders(request):
         'phone': order.phonenumber,
         'address': order.address,
         'order_price': f'{round(order.order_price)} руб.',
+        'payment_method': order.get_payment_method_display()
     } for order in Order.objects.all().get_order_price()]
     return render(request, template_name='order_items.html', context={
         'orders': orders,

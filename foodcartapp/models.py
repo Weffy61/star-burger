@@ -142,6 +142,10 @@ class Order(models.Model):
         ('delivery', 'Доставка заказа'),
         ('delivered', 'Товар доставлен'),
     ]
+    PAYMENT_CHOICES = [
+        ('cash', 'Наличностью'),
+        ('card', 'Электронно')
+    ]
     firstname = models.CharField(verbose_name='Имя клиента', max_length=50)
     lastname = models.CharField(verbose_name='Фамилия клиента', max_length=50)
     phonenumber = PhoneNumberField(verbose_name='Номер телефона')
@@ -153,9 +157,26 @@ class Order(models.Model):
         default='unprocessed',
         db_index=True)
     comment = models.TextField(verbose_name='Коментарий к заказу', blank=True)
-    created = models.DateTimeField(verbose_name='Дата и время создания заказа', default=timezone.now, db_index=True)
-    called = models.DateTimeField(verbose_name='Дата и время прозвона заказа', db_index=True, blank=True, null=True)
-    delivered = models.DateTimeField(verbose_name='Дата и время доставки заказа', db_index=True, blank=True, null=True)
+    created = models.DateTimeField(
+        verbose_name='Дата и время создания заказа',
+        default=timezone.now, db_index=True)
+    called = models.DateTimeField(
+        verbose_name='Дата и время прозвона заказа',
+        db_index=True,
+        blank=True,
+        null=True)
+    delivered = models.DateTimeField(
+        verbose_name='Дата и время доставки заказа',
+        db_index=True,
+        blank=True,
+        null=True)
+    payment_method = models.CharField(
+        verbose_name='Способ оплаты',
+        max_length=50,
+        choices=PAYMENT_CHOICES,
+        db_index=True,
+        default='Наличностью'
+    )
     objects = OrderQuerySet.as_manager()
 
     class Meta:
