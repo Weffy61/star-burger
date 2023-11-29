@@ -1,7 +1,9 @@
 from django.contrib import admin
+from django.http import HttpResponseRedirect
 from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import Product
 from .models import ProductCategory
@@ -118,12 +120,20 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
     fields = ['firstname', 'lastname', 'phonenumber', 'address']
 
+    def response_post_save_change(self, request, obj):
+        response = super().response_post_save_change(request, obj)
+        if "next" in request.GET:
+            url = request.GET['next']
+            if url_has_allowed_host_and_scheme(url, None):
+                return HttpResponseRedirect(url)
+            return response
+
+        else:
+            return response
+
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ['product', 'price', 'quantity', 'order', ]
     raw_id_fields = ['product', 'order']
-
-
-
 
