@@ -95,6 +95,7 @@ def view_orders(request):
     orders = [{
         'id': order.pk,
         'status': order.get_status_display(),
+        'comment': order.comment,
         'client': f'{order.firstname} {order.lastname}',
         'phone': order.phonenumber,
         'address': order.address,
