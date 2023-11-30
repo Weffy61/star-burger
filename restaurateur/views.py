@@ -1,14 +1,13 @@
+import collections
 from django import forms
 from django.shortcuts import redirect, render
 from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
-
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
-
-from foodcartapp.models import Product, Restaurant, Order
+from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem
 
 
 class Login(forms.Form):
@@ -92,6 +91,13 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
+    menu_items = RestaurantMenuItem.objects.select_related('restaurant').select_related('product')
+
+    restaurant_items = collections.defaultdict(list)
+    for item in menu_items:
+        if item.availability:
+            restaurant_items[item.restaurant.name].append(item.product.name)
+
     orders = [{
         'id': order.pk,
         'status': order.get_status_display(),
@@ -100,9 +106,16 @@ def view_orders(request):
         'phone': order.phonenumber,
         'address': order.address,
         'order_price': f'{round(order.order_price)} руб.',
-        'payment_method': order.get_payment_method_display()
+        'payment_method': order.get_payment_method_display(),
+        'available_restaurants': [
+            item for item in restaurant_items if all(menu_item in restaurant_items[item] for menu_item in
+                                                     [item.product.name for item in order.items.all()])],
+        'restaurant': order.restaurant.name if order.restaurant else 'Ресторан не выбран'
+
+
     } for order in Order.objects.all().get_order_price()]
+
     return render(request, template_name='order_items.html', context={
         'orders': orders,
-        'current_url': request.path
+        'current_url': request.path,
     })

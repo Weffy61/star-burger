@@ -118,7 +118,7 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
-    fields = ['status', 'payment_method', 'firstname', 'lastname', 'phonenumber',
+    fields = ['status', 'payment_method', 'restaurant', 'firstname', 'lastname', 'phonenumber',
               'address', 'comment', 'created', 'called', 'delivered']
     readonly_fields = ['created']
 

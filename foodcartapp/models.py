@@ -129,7 +129,8 @@ class RestaurantMenuItem(models.Model):
 class OrderQuerySet(models.QuerySet):
 
     def get_order_price(self):
-        amount = self.prefetch_related('items').prefetch_related('items__product').annotate(
+        amount = self.prefetch_related('items').prefetch_related('items__product').select_related(
+            'restaurant').order_by('-status').annotate(
             order_price=Sum(F('items__quantity') * F('items__price'))
         )
         return amount
@@ -177,6 +178,8 @@ class Order(models.Model):
         db_index=True,
         default='Наличностью'
     )
+    restaurant = models.ForeignKey(Restaurant, verbose_name='Ресторан', related_name='orders',
+                                   on_delete=models.CASCADE, null=True, blank=True)
     objects = OrderQuerySet.as_manager()
 
     class Meta:
