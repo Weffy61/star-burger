@@ -1,4 +1,5 @@
 import collections
+
 from django import forms
 from django.shortcuts import redirect, render
 from django.views import View
@@ -8,6 +9,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
 from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem
+from .services import get_distance
 
 
 class Login(forms.Form):
@@ -92,11 +94,14 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     menu_items = RestaurantMenuItem.objects.select_related('restaurant').select_related('product')
-
     restaurant_items = collections.defaultdict(list)
+    restaurant_address = {}
+
     for item in menu_items:
         if item.availability:
             restaurant_items[item.restaurant.name].append(item.product.name)
+        if not restaurant_address.get(item.restaurant.name):
+            restaurant_address[item.restaurant.name] = item.restaurant.address
 
     orders = [{
         'id': order.pk,
@@ -107,11 +112,13 @@ def view_orders(request):
         'address': order.address,
         'order_price': f'{round(order.order_price)} руб.',
         'payment_method': order.get_payment_method_display(),
-        'available_restaurants': [
-            item for item in restaurant_items if all(menu_item in restaurant_items[item] for menu_item in
-                                                     [item.product.name for item in order.items.all()])],
+        'available_restaurants': sorted([
+            get_distance(item, restaurant_address[item], order.address)
+            for item in restaurant_items
+            if all(menu_item in restaurant_items[item] for menu_item in
+                   [item.product.name for item in order.items.all()])],
+            key=lambda x: float(x.split(' - ')[1].split(' ')[0]) if '-' in x else 0),
         'restaurant': order.restaurant.name if order.restaurant else 'Ресторан не выбран'
-
 
     } for order in Order.objects.all().get_order_price()]
 
