@@ -9,7 +9,8 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
 from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem
-from .services import get_distance
+from geoapp.models import Coordinate
+from geoapp.services import get_distance
 
 
 class Login(forms.Form):
@@ -96,6 +97,7 @@ def view_orders(request):
     menu_items = RestaurantMenuItem.objects.select_related('restaurant').select_related('product')
     restaurant_items = collections.defaultdict(list)
     restaurant_address = {}
+    coordinates = [coordinate for coordinate in Coordinate.objects.all()]
 
     for item in menu_items:
         if item.availability:
@@ -113,7 +115,7 @@ def view_orders(request):
         'order_price': f'{round(order.order_price)} руб.',
         'payment_method': order.get_payment_method_display(),
         'available_restaurants': sorted([
-            get_distance(item, restaurant_address[item], order.address)
+            get_distance(item, restaurant_address[item], order.address, coordinates)
             for item in restaurant_items
             if all(menu_item in restaurant_items[item] for menu_item in
                    [item.product.name for item in order.items.all()])],
