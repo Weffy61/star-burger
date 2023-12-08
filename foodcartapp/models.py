@@ -145,7 +145,8 @@ class Order(models.Model):
     ]
     PAYMENT_CHOICES = [
         ('cash', 'Наличностью'),
-        ('card', 'Электронно')
+        ('card', 'Электронно'),
+        ('missed', 'Не указано'),
     ]
     firstname = models.CharField(verbose_name='Имя клиента', max_length=50)
     lastname = models.CharField(verbose_name='Фамилия клиента', max_length=50)
@@ -176,7 +177,7 @@ class Order(models.Model):
         max_length=50,
         choices=PAYMENT_CHOICES,
         db_index=True,
-        default='Наличностью'
+        default='Не указано'
     )
     restaurant = models.ForeignKey(Restaurant, verbose_name='Ресторан', related_name='orders',
                                    on_delete=models.CASCADE, null=True, blank=True)
