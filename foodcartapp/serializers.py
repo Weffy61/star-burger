@@ -1,3 +1,4 @@
+from phonenumber_field.serializerfields import PhoneNumberField
 from rest_framework.serializers import ModelSerializer, ListField
 from rest_framework import serializers
 
@@ -18,6 +19,7 @@ class OrderSerializer(ModelSerializer):
         allow_empty=False,
         write_only=True
     )
+    phonenumber = PhoneNumberField(region="RU")
 
     class Meta:
         model = Order
