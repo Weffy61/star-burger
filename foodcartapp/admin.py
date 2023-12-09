@@ -5,6 +5,7 @@ from django.templatetags.static import static
 from django.utils.html import format_html
 from django.utils.http import url_has_allowed_host_and_scheme
 
+from star_burger.settings import ALLOWED_HOSTS
 from .models import Product
 from .models import ProductCategory
 from .models import Restaurant
@@ -126,7 +127,7 @@ class OrderAdmin(admin.ModelAdmin):
         response = super().response_post_save_change(request, obj)
         if "next" in request.GET:
             url = request.GET['next']
-            if url_has_allowed_host_and_scheme(url, None):
+            if url_has_allowed_host_and_scheme(url, ALLOWED_HOSTS):
                 return HttpResponseRedirect(url)
             return response
 
