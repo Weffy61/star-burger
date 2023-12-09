@@ -177,7 +177,7 @@ class Order(models.Model):
         max_length=50,
         choices=PAYMENT_CHOICES,
         db_index=True,
-        default='Не указано'
+        default='missed'
     )
     restaurant = models.ForeignKey(Restaurant, verbose_name='Ресторан', related_name='orders',
                                    on_delete=models.CASCADE, null=True, blank=True)
