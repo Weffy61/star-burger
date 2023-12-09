@@ -1,5 +1,5 @@
 from phonenumber_field.serializerfields import PhoneNumberField
-from rest_framework.serializers import ModelSerializer, ListField
+from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 
 from .models import OrderItem, Order
@@ -14,10 +14,10 @@ class OrderItemSerializer(ModelSerializer):
 
 class OrderSerializer(ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    products = ListField(
-        child=OrderItemSerializer(),
-        allow_empty=False,
-        write_only=True
+    products = OrderItemSerializer(
+        many=True,
+        write_only=True,
+        allow_empty=False
     )
     phonenumber = PhoneNumberField(region="RU")
 
