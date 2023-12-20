@@ -149,6 +149,7 @@ Parcel будет следить за файлами в каталоге `bundle
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `ROLLBAR_TOKEN` - токен [rollbar](https://rollbar.com/)
 - `ENVIRONMENT` - состояние проекта, задайте свой нейминг окружения. По умолчанию значение `development`.
+- `DATABASE_URL` - Например: postgresql://USER:PASSWORD@HOST:PORT/NAME. [Подробнее](https://github.com/jazzband/dj-database-url#url-schema)
 
 ## Цели проекта
 
