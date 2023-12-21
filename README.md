@@ -151,6 +151,16 @@ Parcel будет следить за файлами в каталоге `bundle
 - `ENVIRONMENT` - состояние проекта, задайте свой нейминг окружения. По умолчанию значение `development`.
 - `DATABASE_URL` - Например: postgresql://USER:PASSWORD@HOST:PORT/NAME. [Подробнее](https://github.com/jazzband/dj-database-url#url-schema)
 
+
+### Быстрое обновление
+Для быстрого обновления проекта запустим файл `deploy_star_burger.ssh`:
+
+```
+./deploy_star_burger.sh arg1
+```
+
+Для запуска требуется обязательный аргумент `arg1` - полный путь до проекта.
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
