@@ -9,7 +9,7 @@ env = Env()
 env.read_env()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 YANDEX_API_GEOCODER = env.str('YANDEX_API_GEOCODER')
 SECRET_KEY = env('SECRET_KEY')
