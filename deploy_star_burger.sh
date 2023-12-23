@@ -16,6 +16,6 @@ curl --http1.1 -X POST \
   https://api.rollbar.com/api/1/deploy \
   -H "X-Rollbar-Access-Token: $ROLLBAR_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"environment": "'"$ENVIRONMENT"'", "revision": "'"$hash"'"}'
+  -d '{"environment": "'"$ENVIRONMENT"'", "revision": "'"$hash"'", "local_username": "'"$USER"'"}'
 echo "Деплой успешно произведен"
 
