@@ -7,7 +7,6 @@ pip install -r requirements.txt
 npm ci --dev
 python3 manage.py collectstatic --noinput
 python3 manage.py migrate --noinput
-systemctl restart star-front.service
 systemctl restart star-back.service
 systemctl reload nginx.service
 hash=$(git rev-parse HEAD)
